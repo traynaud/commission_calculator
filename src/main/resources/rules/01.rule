@@ -1,0 +1,29 @@
+// RULE SPAIN AND REPEAT :
+{  
+   id:1,
+   name:'spain or repeat',
+   rate:{  
+      percent:8
+   },
+   restrictions:{  
+      @or:[  
+         {  
+            '@mission.duration ':{  
+               gt:'2months'
+            }
+         },
+         {  
+            '@commercialrelation.duration':{  
+               gt:'2months'
+            },
+
+         }
+      ],
+      '@client.location':{  
+         country:'ES'
+      },
+      '@freelancer.location':{  
+         country:'ES'
+      }
+   }
+}

@@ -1,0 +1,14 @@
+{  
+   client:{  
+      ip:'217.127.206.227'
+   },
+   freelancer:{  
+      ip:'217.127.206.227'
+   },
+   mission:{  
+      length:'4months'
+   }   commercialrelation:{  
+      firstmission:'2018-04-16 13:24:17.510Z',
+      last_mission:'2018-07-16 14:24:17.510Z'
+   }
+}
