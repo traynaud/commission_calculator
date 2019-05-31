@@ -4,9 +4,20 @@ import java.time.OffsetDateTime;
 import java.util.EnumMap;
 import java.util.Map;
 
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.MapKeyEnumerated;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.malt.model.condition.enums.DateTimeOperator;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Represents a valued condition that is applied on a Date/Time Object
@@ -16,9 +27,16 @@ import lombok.Getter;
  * @since 30 May 2019
  *
  */
+@Entity
+@Table
+@OnDelete(action = OnDeleteAction.CASCADE)
+@PrimaryKeyJoinColumn(name = "id")
+@Getter
+@Setter
 public class DateTimeCondition extends ValueCondition {
 
-	@Getter
+	@ElementCollection
+	@MapKeyEnumerated(EnumType.STRING)
 	final Map<DateTimeOperator, OffsetDateTime> operators = new EnumMap<>(DateTimeOperator.class);
 
 	public boolean check(final OffsetDateTime var) {

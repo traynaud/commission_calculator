@@ -13,18 +13,18 @@ import javax.persistence.Table;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import com.malt.model.Location;
-import com.malt.model.condition.enums.LocationOperator;
+import com.malt.model.Delay;
+import com.malt.model.condition.enums.NumericalOperator;
 
 import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Represents a valued condition that is applied on a Location Object
+ * Represents a valued condition that is applied on a Delay Object
  *
  * @author Tanguy
  * @version 1.0
- * @since 30 May 2019
+ * @since 31 May 2019
  *
  */
 @Entity
@@ -33,26 +33,33 @@ import lombok.Setter;
 @PrimaryKeyJoinColumn(name = "id")
 @Getter
 @Setter
-public class LocationCondition extends ValueCondition {
+public class DelayCondition extends ValueCondition {
 
 	@ElementCollection
 	@MapKeyEnumerated(EnumType.STRING)
-	final Map<LocationOperator, Location> operators = new EnumMap<>(LocationOperator.class);
+	final Map<NumericalOperator, Delay> operators = new EnumMap<>(NumericalOperator.class);
 
-	public boolean check(final Location var) {
-		for (final LocationOperator operator : operators.keySet()) {
-			final Location constraint = operators.get(operator);
+	public boolean check(final Delay var) {
+		for (final NumericalOperator operator : operators.keySet()) {
+			final Delay constraint = operators.get(operator);
+			final int compare = constraint.compareTo(var);
 			switch (operator) {
-			case IN_CONTINENT:
-				if (!var.getContinent().equals(constraint.getContinent())) {
+			case EQUALS:
+				if (compare != 0) {
 					return false;
 				}
 				break;
-			case IN_COUNTRY:
-				if (!var.getCountry().equals(constraint.getCountry())) {
+			case GREATER_THAN:
+				if (compare > 0) {
 					return false;
 				}
 				break;
+			case LOWER_THAN:
+				if (compare < 0) {
+					return false;
+				}
+				break;
+
 			default:
 				break;
 			}

@@ -5,19 +5,17 @@ import java.util.Map;
 
 import com.malt.model.condition.enums.NumericalOperator;
 
-import lombok.Getter;
-
 /**
  * Represents a valued condition that is applied on a Numerical Object
  *
  * @author Tanguy
  * @version 1.0
  * @since 30 May 2019
- *
+ * @deprecated Hibernate works badly with generics
  */
-public class NumericalCondition<T extends Comparable<T>> extends ValueCondition {
+@Deprecated
+public abstract class NumericalCondition<T extends Comparable<T>> extends ValueCondition {
 
-	@Getter
 	final Map<NumericalOperator, T> operators = new EnumMap<>(NumericalOperator.class);
 
 	public boolean check(final T var) {

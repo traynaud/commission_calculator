@@ -5,8 +5,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import com.malt.model.condition.Condition;
 
@@ -27,7 +30,6 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Rule {
-	// TODO
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
@@ -35,13 +37,14 @@ public class Rule {
 	@EqualsAndHashCode.Include
 	Long id;
 
-	@Column(nullable = false)
+	@Column(nullable = false, unique = true)
 	String name;
 
 	@Column(nullable = false)
 	double rate;
 
-	@Column(nullable = true)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@ManyToOne(optional = false)
 	Condition condition;
 
 }
