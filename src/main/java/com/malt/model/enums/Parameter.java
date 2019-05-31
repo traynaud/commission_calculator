@@ -1,7 +1,7 @@
 package com.malt.model.enums;
 
+import static com.malt.model.enums.ParameterType.DELAY;
 import static com.malt.model.enums.ParameterType.LOCATION;
-import static com.malt.model.enums.ParameterType.NUMERICAL;
 
 import lombok.Getter;
 
@@ -15,8 +15,8 @@ import lombok.Getter;
  */
 public enum Parameter {
 
-	MISSION_DURATION("mission.duration", NUMERICAL),
-	COMMERCIAL_RELATION_DURATION("commercialrelation.duration", NUMERICAL),
+	MISSION_DURATION("mission.duration", DELAY),
+	COMMERCIAL_RELATION_DURATION("commercialrelation.duration", DELAY),
 	CLIENT_LOCATION("client.location", LOCATION),
 	FREELANCER_LOCATION("freelancer.location", LOCATION);
 
@@ -31,6 +31,7 @@ public enum Parameter {
 	}
 
 	public static Parameter fromString(String str) {
+		str = str.trim();
 		if (str.startsWith("@")) {
 			str = str.substring(1);
 		}

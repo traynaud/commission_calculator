@@ -10,7 +10,9 @@ package com.malt.model.enums;
  */
 public enum ParameterType {
 	STRING,
-	NUMERICAL,
+	NUMERICAL_INTEGER,
+	NUMERICAL_DOUBLE,
+	DELAY,
 	LOCATION,
 	DATE_TIME;
 }

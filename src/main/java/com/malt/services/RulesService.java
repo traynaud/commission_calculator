@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * This {@link Service} manage the elements related to the rules
- * 
+ *
  * @author Tanguy
  * @version 1.0
  * @since 29 May 2019
@@ -21,4 +21,5 @@ public class RulesService {
 	@Value("${rules_directory}")
 	private String rulesDirectory;
 
+	// Check only rules that have a fee stricly inferior to the better found
 }
