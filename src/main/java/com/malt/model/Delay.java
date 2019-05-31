@@ -1,5 +1,8 @@
 package com.malt.model;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -33,7 +36,8 @@ import lombok.Setter;
 public class Delay implements Comparable<Delay> {
 
 	private static final Logger logger = LoggerFactory.getLogger(Delay.class);
-	private static final String REGEX_DELAY = "(\\d+[A-Za-z]+\\s*)+";
+	private static final String REGEX_DELAY = "(\\d+)(([A-Za-z]+))";
+	private static final String REGEX_MULTIPLE_DELAY = "(" + REGEX_DELAY + "(\\s+|[&_\\-\\+,;\\:])?)+";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
@@ -113,12 +117,65 @@ public class Delay implements Comparable<Delay> {
 		return Integer.compare(norm.getSeconds(), o_norm.getSeconds());
 	}
 
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder();
+		if (years > 0) {
+			sb.append(Integer.toString(years)).append(Time.YEAR.name().toLowerCase()).append(years > 1 ? 's' : "");
+		}
+		if (months > 0) {
+			sb.append(Integer.toString(months)).append(Time.MONTH.name().toLowerCase()).append(months > 1 ? 's' : "");
+		}
+		if (days > 0) {
+			sb.append(Integer.toString(days)).append(Time.DAY.name().toLowerCase()).append(days > 1 ? 's' : "");
+		}
+		if (hours > 0) {
+			sb.append(Integer.toString(hours)).append(Time.HOUR.name().toLowerCase()).append(hours > 1 ? 's' : "");
+		}
+		if (minutes > 0) {
+			sb.append(Integer.toString(minutes)).append(Time.MINUTE.name().toLowerCase())
+					.append(minutes > 1 ? 's' : "");
+		}
+		if (seconds > 0) {
+			sb.append(Integer.toString(seconds)).append(Time.SECOND.name().toLowerCase())
+					.append(seconds > 1 ? 's' : "");
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Create a new {@link Delay} from a string
+	 *
+	 * @param str ({@link String}) A string representing a delay.
+	 * @return {@link Delay}
+	 * @see #REGEX_DELAY
+	 */
 	public static Delay fromString(final String str) {
-		if (!str.matches(REGEX_DELAY)) {
-			logger.warn("'{}' is not a valid Delay : expected '{}'", str, REGEX_DELAY);
+		if (!str.matches(REGEX_MULTIPLE_DELAY)) {
+			logger.warn("'{}' is not a valid Delay : expected '{}'", str, REGEX_MULTIPLE_DELAY);
 			return null;
 		}
-		throw new UnsupportedOperationException("Delay#fromString : Not implemented Yet!");
+		final Delay delay = new Delay();
+		final Pattern pattern = Pattern.compile(REGEX_DELAY);
+		final Matcher matcher = pattern.matcher(str);
+		while (matcher.find()) {
+			final int value;
+			try {
+				value = Integer.parseInt(matcher.group(1));
+			} catch (final NumberFormatException e) {
+				logger.warn("An error occured with group '{}': Unable to convert '{}' into a number!", matcher.group(0),
+						matcher.group(1));
+				return null;
+			}
+			final Time time = Time.fromString(matcher.group(2));
+			if (time == null) {
+				logger.warn("An error occured with group '{}': '{}' is not a valid time value", matcher.group(0),
+						matcher.group(2));
+				return null;
+			}
+			delay.addTime(time, value);
+		}
+		return delay;
 	}
 
 	/**
@@ -141,7 +198,7 @@ public class Delay implements Comparable<Delay> {
 	 */
 	private static Period normalizePeriod(Period period) {
 		period = period.normalizedStandard(PeriodType.yearMonthDayTime());
-		while (period.getDays() > 30) {
+		while (period.getDays() >= 30) {
 			period = period.minusDays(30);
 			period = period.plusMonths(1);
 		}
