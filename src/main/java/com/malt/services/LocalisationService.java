@@ -30,7 +30,7 @@ import com.malt.repositories.LocationRepository;
 public class LocalisationService {
 
 	private static final Logger logger = LoggerFactory.getLogger(LocalisationService.class);
-	private final static String REGEX_IP_ADDRESS = "TODO";
+	private final static String REGEX_IP_ADDRESS = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
 
 	@Autowired
 	private LocationRepository locationRepository;
@@ -90,7 +90,7 @@ public class LocalisationService {
 	 * @param IPaddress (String) an IP address as String
 	 * @return {@link Country}
 	 */
-	private Country getCountryFromAddress(final String IPaddress) {
+	public Country getCountryFromAddress(final String IPaddress) {
 		// TODO: check address regex
 		if (cache_adresses.containsKey(IPaddress)) {
 			return cache_adresses.get(IPaddress);
@@ -107,5 +107,12 @@ public class LocalisationService {
 			return country;
 		}
 		throw new UnsupportedOperationException("LocalisationService#getCountryFromAddress : Not implemented Yet!");
+	}
+
+	private static boolean checkIPAdress(final String address) {
+		if (address == null || address.isEmpty()) {
+			return false;
+		}
+		return address.matches(REGEX_IP_ADDRESS);
 	}
 }
