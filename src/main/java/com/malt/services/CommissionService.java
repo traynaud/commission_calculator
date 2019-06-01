@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 
 import com.malt.exceptions.InvalidQueryException;
 import com.malt.model.Rule;
-import com.malt.model.dtos.CommercialRelationDTO;
 import com.malt.model.dtos.CommissionAnswerDTO;
+import com.malt.model.json.CommercialRelation;
 
 /**
  * This {@link Service} manage the commissions fees of the freelancers
@@ -46,7 +46,7 @@ public class CommissionService {
 	public CommissionAnswerDTO getCommissionFromJson(final String json) {
 		try {
 			final JSONObject jsonObject = new JSONObject(json);
-			final CommercialRelationDTO request = CommercialRelationDTO.fromJson(jsonObject);
+			final CommercialRelation request = CommercialRelation.parseJson(jsonObject);
 			if (request == null) {
 				throw new InvalidQueryException("Unable to parse specified Json Query");
 			}
@@ -63,10 +63,10 @@ public class CommissionService {
 	 * fee<br/>
 	 * If none Apply, the Default fee is returned
 	 *
-	 * @param request ({@link CommercialRelationDTO}) A list of parameters
+	 * @param request ({@link CommercialRelation}) A list of parameters
 	 * @return ({@link CommissionAnswerDTO}) the most appropriate fee
 	 */
-	private CommissionAnswerDTO findBestRule(final CommercialRelationDTO request) {
+	private CommissionAnswerDTO findBestRule(final CommercialRelation request) {
 		final List<Rule> rules = ruleService.getAllRules();
 		// TODO: Check only rules with a better fee to optimize exploration
 		throw new UnsupportedOperationException("CommissionService#findBestRule Not implemented yet!");
@@ -77,11 +77,11 @@ public class CommissionService {
 	 * parameters
 	 *
 	 * @param rule    a {@link Rule} to check
-	 * @param request ({@link CommercialRelationDTO}) A list of parameters
+	 * @param request ({@link CommercialRelation}) A list of parameters
 	 * @return <code>true</code> if the {@link Rule} can be applied,
 	 *         <code>false</code> otherwise
 	 */
-	private boolean checkOneRule(final Rule rule, final CommercialRelationDTO request) {
+	private boolean checkOneRule(final Rule rule, final CommercialRelation request) {
 		// TODO: Check One Rule
 		throw new UnsupportedOperationException("CommissionService#checkOneRule Not implemented yet!");
 	}

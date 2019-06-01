@@ -14,5 +14,6 @@ public enum ParameterType {
 	NUMERICAL_DOUBLE,
 	DELAY,
 	LOCATION,
-	DATE_TIME;
+	DATE_TIME,
+	IP_ADDRESS;
 }
