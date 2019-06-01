@@ -1,5 +1,7 @@
 package com.malt.services;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -8,9 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.malt.model.Address;
 import com.malt.model.Location;
 import com.malt.model.enums.Continent;
 import com.malt.model.enums.Country;
+import com.malt.repositories.AddressRepository;
 import com.malt.repositories.LocationRepository;
 
 /**
@@ -26,9 +30,20 @@ import com.malt.repositories.LocationRepository;
 public class LocalisationService {
 
 	private static final Logger logger = LoggerFactory.getLogger(LocalisationService.class);
+	private final static String REGEX_IP_ADDRESS = "TODO";
 
 	@Autowired
 	private LocationRepository locationRepository;
+
+	@Autowired
+	private AddressRepository addressRepository;
+
+	private final Map<String, Country> cache_adresses = new HashMap<>();
+
+	public LocalisationService() {
+		// TODO: >>TMP: REMOVE WHEN IP TRACKER IS WORKING
+		cache_adresses.put("217.127.206.227", Country.SPAIN);
+	}
 
 	/**
 	 * Find if exists and return a {@link Location} based on a {@link Country}<br/>
@@ -67,5 +82,30 @@ public class LocalisationService {
 		location.setContinent(continent);
 		location = locationRepository.save(location);
 		return location;
+	}
+
+	/**
+	 * Find the country related to the specified Address
+	 *
+	 * @param IPaddress (String) an IP address as String
+	 * @return {@link Country}
+	 */
+	private Country getCountryFromAddress(final String IPaddress) {
+		// TODO: check address regex
+		if (cache_adresses.containsKey(IPaddress)) {
+			return cache_adresses.get(IPaddress);
+		}
+		final Optional<Address> opt_address = addressRepository.findByAddress(IPaddress);
+		if (opt_address.isPresent()) {
+			final Address address = opt_address.get();
+			final Country country = Country.fromString(address.getLocation());
+			if (country == null) {
+				logger.warn("Unable to resolve '{}' as a valid country from IP {}", address.getLocation(), IPaddress);
+				return null;
+			}
+			cache_adresses.put(IPaddress, country);
+			return country;
+		}
+		throw new UnsupportedOperationException("LocalisationService#getCountryFromAddress : Not implemented Yet!");
 	}
 }
