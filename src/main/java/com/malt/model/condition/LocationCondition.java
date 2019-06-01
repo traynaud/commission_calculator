@@ -3,9 +3,12 @@ package com.malt.model.condition;
 import java.util.EnumMap;
 import java.util.Map;
 
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.MapKeyEnumerated;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
@@ -35,8 +38,10 @@ import lombok.Setter;
 @Setter
 public final class LocationCondition extends ValueCondition {
 
-	@ElementCollection
-	@MapKeyEnumerated(EnumType.STRING)
+	@MapKeyEnumerated(value = EnumType.STRING)
+	@ManyToMany(targetEntity = Location.class)
+	@JoinTable(joinColumns = @JoinColumn(name = "conditionId"), inverseJoinColumns = @JoinColumn(name = "locationId"))
+	@MapKeyColumn(name = "operator")
 	final Map<LocationOperator, Location> operators = new EnumMap<>(LocationOperator.class);
 
 	public boolean check(final Location var) {

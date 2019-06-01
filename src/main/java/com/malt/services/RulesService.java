@@ -13,6 +13,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.malt.exceptions.InvalidQueryException;
 import com.malt.model.Rule;
+import com.malt.model.condition.Condition;
 import com.malt.repositories.RuleRepository;
 
 /**
@@ -56,15 +60,71 @@ public class RulesService {
 	 * @return {@link Rule}
 	 */
 	@Transactional
-	public Rule parseRuleFromJson(final String json) {
-		// TODO: Check if the rule exists based on its name
-		final Optional<Rule> opt_rule = getRuleByName("TODO");
-		if (opt_rule.isPresent()) {
-			return opt_rule.get();
+	public Rule parseRuleFromJson(final String jsonStr) {
+		final String name;
+		final String restrictions;
+		final double rate;
+		try {
+			final JSONObject json = new JSONObject(jsonStr);
+			if (!json.has("name")) {
+				logger.warn("Invalid Rule can't be processed! Missing mandatory attribute 'name'");
+				return null;
+			}
+			name = json.getString("name");
+
+			if (!json.has("rate")) {
+				logger.warn("Invalid Rule can't be processed! Missing mandatory attribute 'rate'");
+				return null;
+			}
+			rate = extractRate(json.optJSONObject("rate"));
+			if (rate == Double.NaN) {
+				logger.warn("Invalid Rule can't be processed! The mandatory attribute 'rate' contains invalid data");
+				return null;
+			}
+
+			restrictions = json.optString("restrictions");
+			if (restrictions == null || restrictions.isEmpty()) {
+				logger.warn("Rule '" + name + "' has no attribute 'restrictions'... the rule will always be valid");
+			}
+		} catch (final JSONException e) {
+			logger.error("Unable to parse Json Rule: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+			throw new InvalidQueryException(
+					"Specified Json Rule can't be pocessed: " + e.getClass().getSimpleName() + ": " + e.getMessage());
 		}
 
-		System.out.println("CONDITION=" + conditionService.parseRestrictions(json));
-		throw new UnsupportedOperationException("RulesService#addRuleFromJson(...) : Not implemented Yet!");
+		final Optional<Rule> opt_rule = getRuleByName(name);
+		if (opt_rule.isPresent()) {
+			logger.warn("Rule '{}' Already exists!", name);
+			return opt_rule.get();
+		}
+		final Condition condition;
+		if (restrictions != null && !restrictions.isEmpty()) {
+			condition = conditionService.parseRestrictions(restrictions);
+			if (condition == null) {
+				logger.warn("Invalid Rule 'restrictions' resulted in parsing failure of rule '{}'", name);
+				return null;
+			}
+		} else {
+			condition = null;
+		}
+		Rule rule = new Rule();
+		rule.setName(name);
+		rule.setRate(rate);
+		rule.setCondition(condition);
+		rule = ruleRepository.save(rule);
+		return rule;
+	}
+
+	/**
+	 * Extract the rule rate from Json<br/>
+	 * <br/>
+	 * Note: This function can be improved latter to return a more complex Object
+	 *
+	 * @param rate (Json)
+	 * @return the percentage value Of the Rate
+	 */
+	private double extractRate(final JSONObject rate) {
+		return rate.optDouble("percent");
 	}
 
 	/**

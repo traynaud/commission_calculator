@@ -89,6 +89,9 @@ public class ConditionService {
 	@Autowired
 	private LocalisationService localisationService;
 
+	@Autowired
+	private DelayService delayService;
+
 	/**
 	 * Parse Json to extract the restrictions that compose the conditions of the
 	 * rule
@@ -230,8 +233,9 @@ public class ConditionService {
 							key);
 					continue;
 				}
-				final Delay delay = Delay.fromString(parameterValues.get(key));
+				Delay delay = Delay.fromString(parameterValues.get(key));
 				if (delay != null) {
+					delay = delayService.persist(delay);
 					delayOperators.put(operator, delay);
 				}
 			}

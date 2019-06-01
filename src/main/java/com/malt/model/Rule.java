@@ -47,4 +47,14 @@ public class Rule {
 	@ManyToOne(optional = false)
 	Condition condition;
 
+	@Override
+	public String toString() {
+		//@formatter:off
+		return "--RULE--"
+				+ "\n>id=" + id
+				+ "\n>name=" + name
+				+ "\n>rate=" + rate
+				+ "\n>condition=" + condition;
+		//@formatter:on
+	}
 }

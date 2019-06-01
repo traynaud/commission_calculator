@@ -3,9 +3,13 @@ package com.malt.model.condition;
 import java.util.EnumMap;
 import java.util.Map;
 
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.MapKeyEnumerated;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
@@ -34,8 +38,11 @@ import lombok.Setter;
 @Setter
 public final class StringCondition extends ValueCondition {
 
+	@MapKeyEnumerated(value = EnumType.STRING)
 	@ElementCollection
-	@MapKeyEnumerated(EnumType.STRING)
+	@JoinTable(joinColumns = @JoinColumn(name = "conditionId"))
+	@MapKeyColumn(name = "operator")
+	@Column(name = "value")
 	final Map<StringOperator, String> operators = new EnumMap<>(StringOperator.class);
 
 	public boolean check(final String var) {
