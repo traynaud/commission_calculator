@@ -1,5 +1,6 @@
 package com.malt.model;
 
+import java.time.OffsetDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,13 +10,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.joda.time.MutablePeriod;
 import org.joda.time.Period;
-import org.joda.time.PeriodType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.malt.model.enums.Time;
+import com.malt.utils.TimeUtils;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -81,19 +81,10 @@ public class Delay implements Comparable<Delay> {
 		}
 	}
 
-	/**
-	 * Convert the current object into a {@link Period}
-	 *
-	 * @return ({@link Period})
-	 */
-	public Period toPeriod() {
-		return new Period(years, months, 0, days, hours, minutes, seconds, 0);
-	}
-
 	@Override
 	public int compareTo(final Delay o) {
-		final Period norm = normalizePeriod(toPeriod());
-		final Period o_norm = normalizePeriod(o.toPeriod());
+		final Period norm = TimeUtils.normalizePeriod(toPeriod());
+		final Period o_norm = TimeUtils.normalizePeriod(o.toPeriod());
 		int compare = Integer.compare(norm.getYears(), o_norm.getYears());
 		if (compare != 0) {
 			return compare;
@@ -144,6 +135,32 @@ public class Delay implements Comparable<Delay> {
 	}
 
 	/**
+	 * Convert the current object into a {@link Period}
+	 *
+	 * @return ({@link Period})
+	 */
+	public Period toPeriod() {
+		return new Period(years, months, 0, days, hours, minutes, seconds, 0);
+	}
+
+	/**
+	 * Create a new {@link Delay} from a {@link Period}
+	 *
+	 * @param period ({@link Period})
+	 * @return {@link Delay}
+	 */
+	public static Delay fromPeriod(final Period period) {
+		final Delay delay = new Delay();
+		delay.setYears(period.getYears());
+		delay.setMonths(period.getMonths());
+		delay.setDays(period.getDays());
+		delay.setHours(period.getHours());
+		delay.setMinutes(period.getMinutes());
+		delay.setSeconds(period.getSeconds());
+		return delay;
+	}
+
+	/**
 	 * Create a new {@link Delay} from a string
 	 *
 	 * @param str ({@link String}) A string representing a delay.
@@ -179,29 +196,47 @@ public class Delay implements Comparable<Delay> {
 	}
 
 	/**
-	 * Normalize a period to facilitate its comparison with another one
+	 * Create a new {@link Delay} from a {@link Period}
 	 *
-	 * @param period ({@link MutablePeriod})
-	 * @return ({@link Period})
-	 * @see Period#normalizedStandard()
+	 * @param dateTime ({@link Period})
+	 * @return {@link Delay}
 	 */
-	private static Period normalizePeriod(final MutablePeriod period) {
-		return normalizePeriod(period.toPeriod());
+	private static Delay fromDateTime(final OffsetDateTime dateTime) {
+		final Delay delay = new Delay();
+		delay.setYears(dateTime.getYear());
+		delay.setMonths(dateTime.getMonthValue());
+		delay.setDays(dateTime.getDayOfMonth());
+		delay.setHours(dateTime.getHour());
+		delay.setMinutes(dateTime.getMinute());
+		delay.setSeconds(dateTime.getSecond());
+		return delay;
 	}
 
 	/**
-	 * Normalize a period to facilitate its comparison with another one
+	 * Compute a {@link Delay} between two dates<br/>
+	 * The delay is always strictly positive, even if the first date is after the
+	 * second
 	 *
-	 * @param period ({@link Period})
-	 * @return ({@link Period})
-	 * @see Period#normalizedStandard()
+	 * @param date1 ({@link OffsetDateTime})
+	 * @param date2 ({@link OffsetDateTime})
+	 * @return {@link Delay}
 	 */
-	private static Period normalizePeriod(Period period) {
-		period = period.normalizedStandard(PeriodType.yearMonthDayTime());
-		while (period.getDays() >= 30) {
-			period = period.minusDays(30);
-			period = period.plusMonths(1);
+	public static Delay delayBetween(final OffsetDateTime date1, final OffsetDateTime date2) {
+		final Delay delay1 = fromDateTime(date1);
+		final Delay delay2 = fromDateTime(date2);
+		final int compareTo = delay1.compareTo(delay2);
+		final Period max;
+		final Period min;
+		if (compareTo == 0) {
+			return new Delay();
+		} else if (compareTo < 0) {
+			max = delay2.toPeriod();
+			min = delay1.toPeriod();
+		} else {
+			max = delay1.toPeriod();
+			min = delay2.toPeriod();
 		}
-		return period.normalizedStandard(PeriodType.yearMonthDayTime());
+		final Period diff = max.minus(min);
+		return Delay.fromPeriod(TimeUtils.normalizePeriod(diff));
 	}
 }

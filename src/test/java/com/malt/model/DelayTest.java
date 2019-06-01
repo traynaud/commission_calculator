@@ -3,11 +3,10 @@ package com.malt.model;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import java.lang.reflect.Method;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
-import org.joda.time.Period;
 import org.junit.Test;
 
 import com.malt.model.enums.Time;
@@ -108,44 +107,6 @@ public class DelayTest {
 		assertEquals(24, d12.getDays());
 		assertEquals(5, d12.getMonths());
 		assertEquals(1, d12.getYears());
-	}
-
-	@Test
-	public void normalizePeriodTest() {
-		try {
-			final Method normalizePeriod = Delay.class.getDeclaredMethod("normalizePeriod", Period.class);
-			normalizePeriod.setAccessible(true);
-
-			final Delay d1 = new Delay();
-			d1.addTime(Time.SECOND, 65);
-			final Object r1 = normalizePeriod.invoke(null, d1.toPeriod());
-			assertTrue(r1 instanceof Period);
-			final Period p1 = (Period) r1;
-			assertEquals(5, p1.getSeconds());
-			assertEquals(1, p1.getMinutes());
-
-			final Delay d2 = new Delay();
-			d2.addTime(Time.SECOND, 135);
-			d2.addTime(Time.MINUTE, 135);
-			d2.addTime(Time.HOUR, 35);
-			d2.addTime(Time.DAY, 32);
-			d2.addTime(Time.MONTH, 14);
-			d2.addTime(Time.YEAR, 1);
-			final Object r2 = normalizePeriod.invoke(null, d2.toPeriod());
-			assertTrue(r2 instanceof Period);
-			final Period p2 = (Period) r2;
-			assertEquals(15, p2.getSeconds());
-			assertEquals(17, p2.getMinutes());
-			assertEquals(13, p2.getHours());
-			assertEquals(3, p2.getDays());
-			assertEquals(3, p2.getMonths());
-			assertEquals(2, p2.getYears());
-
-		} catch (final Exception e) {
-			e.printStackTrace();
-			System.err.println(e.getMessage());
-			fail(e.getMessage());
-		}
 	}
 
 	@Test
@@ -301,5 +262,49 @@ public class DelayTest {
 		assertTrue(d_d5.compareTo(d_M5) == 0);
 		assertTrue(d_d5.compareTo(d_y5) == 0);
 		assertTrue(d_M5.compareTo(d_y5) == 0);
+	}
+
+	@Test
+	public void delayBetweenTest() {
+		final OffsetDateTime dateTime1_A = OffsetDateTime.of(2018, 10, 4, 10, 9, 30, 0, ZoneOffset.UTC);
+		final OffsetDateTime dateTime1_B = OffsetDateTime.of(2018, 10, 4, 10, 10, 20, 0, ZoneOffset.UTC);
+		final Delay test1 = Delay.delayBetween(dateTime1_A, dateTime1_B);
+		assertEquals(50, test1.getSeconds());
+		assertEquals(0, test1.getMinutes());
+		assertEquals(0, test1.getHours());
+		assertEquals(0, test1.getDays());
+		assertEquals(0, test1.getMonths());
+		assertEquals(0, test1.getYears());
+
+		final OffsetDateTime dateTime2_A = OffsetDateTime.of(2018, 10, 4, 10, 9, 30, 0, ZoneOffset.UTC);
+		final OffsetDateTime dateTime2_B = OffsetDateTime.of(2017, 12, 21, 10, 9, 30, 0, ZoneOffset.UTC);
+		final Delay test2 = Delay.delayBetween(dateTime2_A, dateTime2_B);
+		assertEquals(0, test2.getSeconds());
+		assertEquals(0, test2.getMinutes());
+		assertEquals(0, test2.getHours());
+		assertEquals(13, test2.getDays());
+		assertEquals(9, test2.getMonths());
+		assertEquals(0, test2.getYears());
+
+		final OffsetDateTime dateTime3_A = OffsetDateTime.of(2018, 10, 4, 9, 0, 0, 0, ZoneOffset.UTC);
+		final OffsetDateTime dateTime3_B = OffsetDateTime.of(2017, 12, 21, 10, 0, 5, 0, ZoneOffset.UTC);
+		final Delay test3 = Delay.delayBetween(dateTime3_A, dateTime3_B);
+		assertEquals(55, test3.getSeconds());
+		assertEquals(59, test3.getMinutes());
+		assertEquals(22, test3.getHours());
+		assertEquals(12, test3.getDays());
+		assertEquals(9, test3.getMonths());
+		assertEquals(0, test3.getYears());
+
+		final OffsetDateTime dateTime4_A = OffsetDateTime.of(2018, 10, 4, 9, 0, 5, 0, ZoneOffset.UTC);
+		final OffsetDateTime dateTime4_B = OffsetDateTime.of(2017, 12, 21, 10, 0, 0, 0, ZoneOffset.UTC);
+		final Delay test4 = Delay.delayBetween(dateTime4_A, dateTime4_B);
+		System.out.println(test4);
+		assertEquals(5, test4.getSeconds());
+		assertEquals(0, test4.getMinutes());
+		assertEquals(23, test4.getHours());
+		assertEquals(12, test4.getDays());
+		assertEquals(9, test4.getMonths());
+		assertEquals(0, test4.getYears());
 	}
 }
