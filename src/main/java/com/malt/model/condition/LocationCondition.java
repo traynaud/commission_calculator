@@ -33,7 +33,7 @@ import lombok.Setter;
 @PrimaryKeyJoinColumn(name = "id")
 @Getter
 @Setter
-public class LocationCondition extends ValueCondition {
+public final class LocationCondition extends ValueCondition {
 
 	@ElementCollection
 	@MapKeyEnumerated(EnumType.STRING)
@@ -58,5 +58,10 @@ public class LocationCondition extends ValueCondition {
 			}
 		}
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return name + ": " + operators;
 	}
 }

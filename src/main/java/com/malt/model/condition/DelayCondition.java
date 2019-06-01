@@ -33,7 +33,7 @@ import lombok.Setter;
 @PrimaryKeyJoinColumn(name = "id")
 @Getter
 @Setter
-public class DelayCondition extends ValueCondition {
+public final class DelayCondition extends ValueCondition {
 
 	@ElementCollection
 	@MapKeyEnumerated(EnumType.STRING)
@@ -65,5 +65,10 @@ public class DelayCondition extends ValueCondition {
 			}
 		}
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return name + ": " + operators;
 	}
 }

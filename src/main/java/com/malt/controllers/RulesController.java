@@ -8,9 +8,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.malt.model.Rule;
 import com.malt.services.RulesService;
 
 import io.swagger.annotations.Api;
@@ -20,7 +22,7 @@ import io.swagger.annotations.ApiResponses;
 
 /**
  * This {@link Controller} the requests that deal with rules
- * 
+ *
  * @author Tanguy
  * @version 1.0
  * @since 29 May 2019
@@ -42,10 +44,8 @@ public class RulesController {
 			@ApiResponse(code = 400, message = "The received request is invalid and can't be processed!"),
 			@ApiResponse(code = 500, message = "An internal server error occured"), })
 	@PostMapping(value = "/add", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public void add() {
-		// TODO
-		logger.error("Add new rule : Not Implemented Yet!");
-		throw new UnsupportedOperationException("Add new rule : Not Implemented Yet!");
+	public Rule add(@RequestBody final String body) {
+		return rulesService.addRuleFromJson(body);
 	}
 
 	@ApiOperation(value = "List all existing rules that are used to compute freelancer commissions")

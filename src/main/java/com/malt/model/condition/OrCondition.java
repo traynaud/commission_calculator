@@ -33,11 +33,24 @@ import lombok.Setter;
 @PrimaryKeyJoinColumn(name = "id")
 @Getter
 @Setter
-public class OrCondition extends Condition {
+public final class OrCondition extends Condition {
 
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@Cascade(org.hibernate.annotations.CascadeType.ALL)
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	Set<Condition> conditions;
 
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder(">>AND-Start[");
+		if (conditions != null && !conditions.isEmpty()) {
+			for (final Condition condition : conditions) {
+				sb.append("\n\t").append(condition);
+			}
+		} else {
+			sb.append("\n\t-EMPTY-");
+		}
+		sb.append("\n]AND-End<<");
+		return sb.toString();
+	}
 }

@@ -55,4 +55,9 @@ public class Location implements Serializable {
 		}
 		return continent;
 	}
+
+	@Override
+	public String toString() {
+		return getContinent() + (country != null ? "->" + country : "");
+	}
 }

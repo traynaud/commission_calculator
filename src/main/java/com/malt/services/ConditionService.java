@@ -1,5 +1,7 @@
 package com.malt.services;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -18,12 +20,23 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.malt.exceptions.InvalidQueryException;
 import com.malt.model.Delay;
+import com.malt.model.Location;
 import com.malt.model.condition.AndCondition;
 import com.malt.model.condition.Condition;
+import com.malt.model.condition.DateTimeCondition;
 import com.malt.model.condition.DelayCondition;
+import com.malt.model.condition.LocationCondition;
+import com.malt.model.condition.NumericalDoubleCondition;
+import com.malt.model.condition.NumericalIntegerCondition;
 import com.malt.model.condition.OrCondition;
+import com.malt.model.condition.StringCondition;
+import com.malt.model.condition.enums.DateTimeOperator;
+import com.malt.model.condition.enums.LocationOperator;
 import com.malt.model.condition.enums.NumericalOperator;
 import com.malt.model.condition.enums.Operator;
+import com.malt.model.condition.enums.StringOperator;
+import com.malt.model.enums.Continent;
+import com.malt.model.enums.Country;
 import com.malt.model.enums.Parameter;
 import com.malt.model.enums.ParameterType;
 import com.malt.repositories.AndConditionRepository;
@@ -72,6 +85,9 @@ public class ConditionService {
 
 	@Autowired
 	private AndConditionRepository andConditionRepository;
+
+	@Autowired
+	private LocalisationService localisationService;
 
 	/**
 	 * Parse Json to extract the restrictions that compose the conditions of the
@@ -175,14 +191,14 @@ public class ConditionService {
 		}
 		switch (operator) {
 		case AND:
-			final AndCondition andCondition = new AndCondition();
+			AndCondition andCondition = new AndCondition();
 			andCondition.setConditions(conditions);
-			// andCondition = andConditionRepository.save(andCondition);
+			andCondition = andConditionRepository.save(andCondition);
 			return andCondition;
 		case OR:
-			final OrCondition orCondition = new OrCondition();
+			OrCondition orCondition = new OrCondition();
 			orCondition.setConditions(conditions);
-			// orCondition = orConditionRepository.save(orCondition);
+			orCondition = orConditionRepository.save(orCondition);
 			return orCondition;
 		default:
 			logger.warn("The operator '@{}' is not implemented yet and will be ignored", operator.getOperator());
@@ -205,28 +221,164 @@ public class ConditionService {
 		final Map<String, String> parameterValues = extractParameterValues(json);
 		switch (parameter.getType()) {
 		case DELAY:
-			final DelayCondition delayCondition = new DelayCondition();
-			final Map<NumericalOperator, Delay> operators = delayCondition.getOperators();
+			DelayCondition delayCondition = new DelayCondition();
+			delayCondition.setName(parameter);
+			final Map<NumericalOperator, Delay> delayOperators = delayCondition.getOperators();
 			for (final String key : parameterValues.keySet()) {
 				final NumericalOperator operator = NumericalOperator.fromString(key);
-				if (key == null) {
+				if (operator == null) {
 					logger.warn("Unknown {} operator : '{}'. The operator will be ignored!", parameter.getType().name(),
 							key);
 					continue;
 				}
 				final Delay delay = Delay.fromString(parameterValues.get(key));
 				if (delay != null) {
-					operators.put(operator, delay);
+					delayOperators.put(operator, delay);
 				}
 			}
-			if (operators.isEmpty()) {
+			if (delayOperators.isEmpty()) {
 				return null;
 			}
-			// delayCondition = delayConditionRepository.save(delayCondition);
-			System.out.println("DELAY:" + operators);
+			delayCondition = delayConditionRepository.save(delayCondition);
 			return delayCondition;
+		case LOCATION:
+			LocationCondition locationCondition = new LocationCondition();
+			locationCondition.setName(parameter);
+			final Map<LocationOperator, Location> locationOperators = locationCondition.getOperators();
+			for (final String key : parameterValues.keySet()) {
+				final LocationOperator operator = LocationOperator.fromString(key);
+				if (operator == null) {
+					logger.warn("Unknown {} operator : '{}'. The operator will be ignored!", parameter.getType().name(),
+							key);
+					continue;
+				}
+				switch (operator) {
+				case IN_COUNTRY:
+					final Country country = Country.fromString(parameterValues.get(key));
+					if (country == null) {
+						logger.warn("Invalid country '{}' will be ignored!", parameterValues.get(key));
+						continue;
+					}
+					locationOperators.put(operator, localisationService.getLocation(country));
+					break;
+				case IN_CONTINENT:
+					final Continent continent = Continent.fromString(parameterValues.get(key));
+					if (continent == null) {
+						logger.warn("Invalid continent '{}' will be ignored!", parameterValues.get(key));
+						continue;
+					}
+					locationOperators.put(operator, localisationService.getLocation(continent));
+					break;
+				default:
+					logger.warn("Loacation operator '{}' is not supported yet!", operator.name());
+					break;
+				}
+			}
+			if (locationOperators.isEmpty()) {
+				return null;
+			}
+			locationCondition = locationConditionRepository.save(locationCondition);
+			return locationCondition;
+		case DATE_TIME:
+			DateTimeCondition dateTimeCondition = new DateTimeCondition();
+			dateTimeCondition.setName(parameter);
+			final Map<DateTimeOperator, OffsetDateTime> dateTimeOperators = dateTimeCondition.getOperators();
+			for (final String key : parameterValues.keySet()) {
+				final DateTimeOperator operator = DateTimeOperator.fromString(key);
+				if (operator == null) {
+					logger.warn("Unknown {} operator : '{}'. The operator will be ignored!", parameter.getType().name(),
+							key);
+					continue;
+				}
+				try {
+					final OffsetDateTime dateTime = OffsetDateTime.parse(parameterValues.get(key));
+					if (dateTime != null) {
+						dateTimeOperators.put(operator, dateTime);
+					}
+				} catch (final DateTimeParseException e) {
+					logger.warn("Unable to parse expression '{}' as a Date / Time expression",
+							parameterValues.get(key));
+					continue;
+				}
+			}
+			if (dateTimeOperators.isEmpty()) {
+				return null;
+			}
+			dateTimeCondition = dateTimeConditionRepository.save(dateTimeCondition);
+			return dateTimeCondition;
+		case STRING:
+			StringCondition stringCondition = new StringCondition();
+			stringCondition.setName(parameter);
+			final Map<StringOperator, String> stringOperators = stringCondition.getOperators();
+			for (final String key : parameterValues.keySet()) {
+				final StringOperator operator = StringOperator.fromString(key);
+				if (operator == null) {
+					logger.warn("Unknown {} operator : '{}'. The operator will be ignored!", parameter.getType().name(),
+							key);
+					continue;
+				}
+				stringOperators.put(operator, parameterValues.get(key));
+			}
+			if (stringOperators.isEmpty()) {
+				return null;
+			}
+			stringCondition = stringConditionRepository.save(stringCondition);
+			return stringCondition;
+		case NUMERICAL_DOUBLE:
+			NumericalDoubleCondition numericalDoubleCondition = new NumericalDoubleCondition();
+			numericalDoubleCondition.setName(parameter);
+			final Map<NumericalOperator, Double> numericalDoubleOperators = numericalDoubleCondition.getOperators();
+			for (final String key : parameterValues.keySet()) {
+				final NumericalOperator operator = NumericalOperator.fromString(key);
+				if (operator == null) {
+					logger.warn("Unknown {} operator : '{}'. The operator will be ignored!", parameter.getType().name(),
+							key);
+					continue;
+				}
+				try {
+					final Double value = Double.parseDouble(parameterValues.get(key));
+					if (value != null) {
+						numericalDoubleOperators.put(operator, value);
+					}
+				} catch (final NumberFormatException e) {
+					logger.warn("Unable to parse expression '{}' as a Double value", parameterValues.get(key));
+					continue;
+				}
+			}
+			if (numericalDoubleOperators.isEmpty()) {
+				return null;
+			}
+			numericalDoubleCondition = numericalDoubleConditionRepository.save(numericalDoubleCondition);
+			return numericalDoubleCondition;
+		case NUMERICAL_INTEGER:
+			NumericalIntegerCondition numericalIntegerCondition = new NumericalIntegerCondition();
+			numericalIntegerCondition.setName(parameter);
+			final Map<NumericalOperator, Integer> numericalIntegerOperators = numericalIntegerCondition.getOperators();
+			for (final String key : parameterValues.keySet()) {
+				final NumericalOperator operator = NumericalOperator.fromString(key);
+				if (operator == null) {
+					logger.warn("Unknown {} operator : '{}'. The operator will be ignored!", parameter.getType().name(),
+							key);
+					continue;
+				}
+				try {
+					final Integer value = Integer.parseInt(parameterValues.get(key));
+					if (value != null) {
+						numericalIntegerOperators.put(operator, value);
+					}
+				} catch (final NumberFormatException e) {
+					logger.warn("Unable to parse expression '{}' as a Double value", parameterValues.get(key));
+					continue;
+				}
+			}
+			if (numericalIntegerOperators.isEmpty()) {
+				return null;
+			}
+			numericalIntegerCondition = numericalIntegerConditionRepository.save(numericalIntegerCondition);
+			return numericalIntegerCondition;
 		default:
-			logger.warn("The Parameter '@{}' is not implemented yet and will be ignored", parameter.getIdentifier());
+			logger.warn("The Parameter Type '{}' is not implemented yet and will be ignored",
+					parameter.getType().name());
 			return null;
 		}
 	}
@@ -281,40 +433,5 @@ public class ConditionService {
 		}
 		logger.warn("The Json type '{}' is not supported yet and will be ignored", json.getClass().getSimpleName());
 		return null;
-	}
-
-	public static void main(final String[] args) {
-		//@formatter:off
-		final String json = "{  \r\n" +
-				"   id:1,\r\n" +
-				"   name:'spain or repeat',\r\n" +
-				"   rate:{  \r\n" +
-				"      percent:8\r\n" +
-				"   },\r\n" +
-				"   restrictions:{  \r\n" +
-				"      @or:[  \r\n" +
-				"         {  \r\n" +
-				"            '@mission.duration ':{  \r\n" +
-				"               gt:'2months'\r\n" +
-				"            }\r\n" +
-				"         },\r\n" +
-				"         {  \r\n" +
-				"            '@commercialrelation.duration':{  \r\n" +
-				"               gt:'2months'\r\n" +
-				"            },\r\n" +
-				"\r\n" +
-				"         }\r\n" +
-				"      ],\r\n" +
-				"      '@client.location':{  \r\n" +
-				"         country:'ES'\r\n" +
-				"      },\r\n" +
-				"      '@freelancer.location':{  \r\n" +
-				"         country:'ES'\r\n" +
-				"      }\r\n" +
-				"   }\r\n" +
-				"}";
-		//@formatter:on
-		final ConditionService service = new ConditionService();
-		System.out.println(service.parseRestrictions(json));
 	}
 }
