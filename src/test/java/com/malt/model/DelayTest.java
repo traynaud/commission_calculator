@@ -10,6 +10,7 @@ import java.time.ZoneOffset;
 import org.junit.Test;
 
 import com.malt.model.enums.Time;
+import com.malt.utils.TimeUtils;
 
 /**
  * Test the well behavior of the class {@link Delay}
@@ -299,12 +300,21 @@ public class DelayTest {
 		final OffsetDateTime dateTime4_A = OffsetDateTime.of(2018, 10, 4, 9, 0, 5, 0, ZoneOffset.UTC);
 		final OffsetDateTime dateTime4_B = OffsetDateTime.of(2017, 12, 21, 10, 0, 0, 0, ZoneOffset.UTC);
 		final Delay test4 = Delay.delayBetween(dateTime4_A, dateTime4_B);
-		System.out.println(test4);
 		assertEquals(5, test4.getSeconds());
 		assertEquals(0, test4.getMinutes());
 		assertEquals(23, test4.getHours());
 		assertEquals(12, test4.getDays());
 		assertEquals(9, test4.getMonths());
 		assertEquals(0, test4.getYears());
+
+		final OffsetDateTime dateTime5_A = TimeUtils.parseDateTimeFromString("2018-04-16 13:24:17.510Z");
+		final OffsetDateTime dateTime5_B = TimeUtils.parseDateTimeFromString("2018-07-16 14:24:17.510Z");
+		final Delay test5 = Delay.delayBetween(dateTime5_A, dateTime5_B);
+		assertEquals(0, test5.getSeconds());
+		assertEquals(0, test5.getMinutes());
+		assertEquals(1, test5.getHours());
+		assertEquals(0, test5.getDays());
+		assertEquals(3, test5.getMonths());
+		assertEquals(0, test5.getYears());
 	}
 }

@@ -1,6 +1,7 @@
 package com.malt.utils;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -24,14 +25,15 @@ public class TimeUtils {
 	private static final Logger logger = LoggerFactory.getLogger(TimeUtils.class);
 
 	private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS'Z'";
-	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN);
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)
+			.withZone(ZoneId.of("Europe/Berlin"));;
 
 	public static OffsetDateTime parseDateTimeFromString(final String str) {
 		try {
 			final ZonedDateTime dateTime = ZonedDateTime.parse(str, DATE_TIME_FORMATTER);
 			return dateTime.toOffsetDateTime();
 		} catch (final DateTimeParseException e) {
-			logger.warn("unable to parse string '{}' as date", str);
+			logger.warn("unable to parse string '{}' as date:\n\t>{}: {}", str, e.getClass().getName(), e.getMessage());
 			return null;
 		}
 	}

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.malt.exceptions.InvalidQueryException;
 import com.malt.model.Rule;
 import com.malt.model.dtos.CommissionAnswerDTO;
+import com.malt.model.dtos.CommissionRequestDTO;
 import com.malt.model.json.CommercialRelation;
 
 /**
@@ -46,7 +47,8 @@ public class CommissionService {
 	public CommissionAnswerDTO getCommissionFromJson(final String json) {
 		try {
 			final JSONObject jsonObject = new JSONObject(json);
-			final CommercialRelation request = CommercialRelation.parseJson(jsonObject);
+			final CommissionRequestDTO request = CommissionRequestDTO.fromJson(jsonObject);
+			System.out.println(request);
 			if (request == null) {
 				throw new InvalidQueryException("Unable to parse specified Json Query");
 			}
@@ -66,7 +68,7 @@ public class CommissionService {
 	 * @param request ({@link CommercialRelation}) A list of parameters
 	 * @return ({@link CommissionAnswerDTO}) the most appropriate fee
 	 */
-	private CommissionAnswerDTO findBestRule(final CommercialRelation request) {
+	private CommissionAnswerDTO findBestRule(final CommissionRequestDTO request) {
 		final List<Rule> rules = ruleService.getAllRules();
 		// TODO: Check only rules with a better fee to optimize exploration
 		throw new UnsupportedOperationException("CommissionService#findBestRule Not implemented yet!");
@@ -81,7 +83,7 @@ public class CommissionService {
 	 * @return <code>true</code> if the {@link Rule} can be applied,
 	 *         <code>false</code> otherwise
 	 */
-	private boolean checkOneRule(final Rule rule, final CommercialRelation request) {
+	private boolean checkOneRule(final Rule rule, final CommissionRequestDTO request) {
 		// TODO: Check One Rule
 		throw new UnsupportedOperationException("CommissionService#checkOneRule Not implemented yet!");
 	}

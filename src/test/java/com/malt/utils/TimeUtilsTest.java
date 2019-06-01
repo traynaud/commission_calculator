@@ -1,6 +1,7 @@
 package com.malt.utils;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import org.joda.time.Period;
@@ -50,5 +51,11 @@ public class TimeUtilsTest {
 			System.err.println(e.getMessage());
 			fail(e.getMessage());
 		}
+	}
+
+	@Test
+	public void parseDateTimeFromStringTest() {
+		assertNotNull(TimeUtils.parseDateTimeFromString("2018-04-16 13:24:17.510Z"));
+		assertNotNull(TimeUtils.parseDateTimeFromString("2018-07-16 14:24:17.510Z"));
 	}
 }

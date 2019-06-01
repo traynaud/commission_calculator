@@ -58,17 +58,17 @@ public class CommissionRequestDTO {
 			if (freelancerJson != null) {
 				final Freelancer freelancer = new Freelancer();
 				try {
-					freelancer.parseJson(jsonObject);
+					freelancer.parseJson(freelancerJson);
 					dto.setFreelancer(freelancer);
 				} catch (final JSONException e) {
 
 				}
 			}
-			final JSONObject MissionJson = jsonObject.optJSONObject("mission");
-			if (MissionJson != null) {
+			final JSONObject missionJson = jsonObject.optJSONObject("mission");
+			if (missionJson != null) {
 				final Mission mission = new Mission();
 				try {
-					mission.parseJson(jsonObject);
+					mission.parseJson(missionJson);
 					dto.setMission(mission);
 				} catch (final JSONException e) {
 
@@ -78,7 +78,7 @@ public class CommissionRequestDTO {
 			if (commercialRelationJson != null) {
 				final CommercialRelation commercialRelation = new CommercialRelation();
 				try {
-					commercialRelation.parseJson(jsonObject);
+					commercialRelation.parseJson(commercialRelationJson);
 					dto.setCommercialRelation(commercialRelation);
 				} catch (final JSONException e) {
 
@@ -88,5 +88,15 @@ public class CommissionRequestDTO {
 		} catch (final JSONException e) {
 			return null;
 		}
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder("COMMISSION REQUEST:");
+		sb.append("\n\t").append(client != null ? client : "CLIENT=Null");
+		sb.append("\n\t").append(freelancer != null ? freelancer : "FREELANCER=Null");
+		sb.append("\n\t").append(mission != null ? mission : "MISSION=Null");
+		sb.append("\n\t").append(commercialRelation != null ? commercialRelation : "Commercial relation=Null");
+		return sb.toString();
 	}
 }
