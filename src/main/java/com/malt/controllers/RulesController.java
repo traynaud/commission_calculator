@@ -45,7 +45,7 @@ public class RulesController {
 			@ApiResponse(code = 500, message = "An internal server error occured"), })
 	@PostMapping(value = "/add", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public Rule add(@RequestBody final String body) {
-		return rulesService.addRuleFromJson(body);
+		return rulesService.parseRuleFromJson(body);
 	}
 
 	@ApiOperation(value = "List all existing rules that are used to compute freelancer commissions")

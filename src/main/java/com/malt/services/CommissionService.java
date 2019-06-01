@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * This {@link Service} manage the commissions fees of the freelancers
- * 
+ *
  * @author Tanguy
  * @version 1.0
  * @since 29 May 2019
@@ -21,4 +21,8 @@ public class CommissionService {
 	@Autowired
 	private LocalisationService localisationService;
 
+	@Autowired
+	private RulesService ruleService;
+
+	// TODO: Check only rules with a better fee to optimize exploration
 }

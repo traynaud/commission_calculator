@@ -42,7 +42,7 @@ public final class OrCondition extends Condition {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder(">>AND-Start[");
+		final StringBuilder sb = new StringBuilder(">>OR-Start[");
 		if (conditions != null && !conditions.isEmpty()) {
 			for (final Condition condition : conditions) {
 				sb.append("\n\t").append(condition);
@@ -50,7 +50,7 @@ public final class OrCondition extends Condition {
 		} else {
 			sb.append("\n\t-EMPTY-");
 		}
-		sb.append("\n]AND-End<<");
+		sb.append("\n]OR-End<<");
 		return sb.toString();
 	}
 }

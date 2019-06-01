@@ -121,7 +121,6 @@ public class ConditionService {
 	 * @return {@link Condition} a condition built based on the content of the Json
 	 */
 	private Condition recursiveConditionBuilder(final String name, final Object json) {
-		System.out.println(name + "->" + json);
 		if (name == null) {
 			if (json instanceof JSONObject) {
 				final JSONObject jsonObject = (JSONObject) json;
