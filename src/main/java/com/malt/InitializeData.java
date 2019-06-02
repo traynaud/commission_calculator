@@ -36,7 +36,5 @@ public class InitializeData implements CommandLineRunner {
 		final List<Rule> rules = rulesService.parseDirectory();
 		logger.info("Initialisation completed: {} rules have been parsed in {} ms", rules.size(),
 				System.currentTimeMillis() - t1);
-		System.out.println(rules);
-
 	}
 }

@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.malt.model.Address;
+import com.malt.model.enums.Continent;
+import com.malt.model.enums.Country;
 
 /**
  * Repository to work with {@link Address}es in the Database
@@ -19,5 +21,7 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
 
 	Optional<Address> findByAddress(String address);
 
-	List<Address> findAllByLocation(String location);
+	List<Address> findAllByCountry(Country country);
+
+	List<Address> findAllByContinent(Continent continent);
 }

@@ -62,7 +62,6 @@ public class CommissionService {
 		try {
 			final JSONObject jsonObject = new JSONObject(json);
 			final CommissionRequestDTO request = CommissionRequestDTO.fromJson(jsonObject);
-			System.out.println(request);
 			if (request == null) {
 				throw new InvalidQueryException("Unable to parse specified Json Query");
 			}
@@ -140,7 +139,6 @@ public class CommissionService {
 			return false;
 		} else if (condition instanceof ValueCondition) {
 			final boolean value = checkValueCondition((ValueCondition) condition, request);
-			System.out.println(((ValueCondition) condition).getName() + ": " + value);
 			return value;
 		} else {
 			logger.info("Unsupported Contition type : {}", condition.getClass().getSimpleName());
