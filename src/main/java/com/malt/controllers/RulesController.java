@@ -1,5 +1,7 @@
 package com.malt.controllers;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,9 +55,7 @@ public class RulesController {
 			@ApiResponse(code = 400, message = "The received request is invalid and can't be processed!"),
 			@ApiResponse(code = 500, message = "An internal server error occured"), })
 	@GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-	public void list() {
-		// TODO
-		logger.error("list all rules : Not Implemented Yet!");
-		throw new UnsupportedOperationException("List all rules : Not Implemented Yet!");
+	public List<Rule> list() {
+		return rulesService.getAllRules();
 	}
 }
