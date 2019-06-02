@@ -1,5 +1,7 @@
 package com.malt.model.enums;
 
+import lombok.Getter;
+
 /**
  * Exhaustive list of available continent<br/>
  * In real condition, these data is better to be loaded from config files
@@ -17,6 +19,7 @@ public enum Continent {
 	ASIA("asia", "asie"),
 	AFRICA("africa", "afrique");
 
+	@Getter
 	private final String[] names;
 
 	private Continent(final String... names) {

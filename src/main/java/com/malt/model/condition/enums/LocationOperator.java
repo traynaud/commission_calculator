@@ -1,5 +1,7 @@
 package com.malt.model.condition.enums;
 
+import lombok.Getter;
+
 /**
  * Represents operators that can be applied on Location objects
  *
@@ -13,6 +15,7 @@ public enum LocationOperator {
 	IN_COUNTRY("country"),
 	IN_REGION("region");
 
+	@Getter
 	private final String operator;
 
 	private LocationOperator(final String operator) {

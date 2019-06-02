@@ -28,6 +28,13 @@ public class TimeUtils {
 	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)
 			.withZone(ZoneId.of("Europe/Berlin"));;
 
+	/**
+	 * Parse a String and get an {@link OffsetDateTime}. The Parameter must validate
+	 * the format given by {@link #DATE_TIME_FORMATTER}
+	 *
+	 * @param str a String
+	 * @return {@link OffsetDateTime}
+	 */
 	public static OffsetDateTime parseDateTimeFromString(final String str) {
 		try {
 			final ZonedDateTime dateTime = ZonedDateTime.parse(str, DATE_TIME_FORMATTER);

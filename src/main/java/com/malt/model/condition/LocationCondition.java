@@ -18,6 +18,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import com.malt.model.Location;
 import com.malt.model.condition.enums.LocationOperator;
+import com.malt.model.dtos.ConditionValueDTO;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -68,5 +69,27 @@ public final class LocationCondition extends ValueCondition {
 	@Override
 	public String toString() {
 		return name + ": " + operators;
+	}
+
+	@Override
+	public ConditionValueDTO toDTO() {
+		final ConditionValueDTO conditionDTO = new ConditionValueDTO();
+		conditionDTO.setName(name.getIdentifier());
+		for (final LocationOperator operator : operators.keySet()) {
+			String value;
+			switch (operator) {
+			case IN_COUNTRY:
+				value = operators.get(operator).getCountry().getShortName();
+				break;
+			case IN_CONTINENT:
+				value = operators.get(operator).getContinent().getNames()[0];
+				break;
+			default:
+				value = operators.get(operator).toString();
+				break;
+			}
+			conditionDTO.getParameters().put(operator.getOperator(), value);
+		}
+		return conditionDTO;
 	}
 }

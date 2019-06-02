@@ -9,7 +9,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.malt.model.Rule;
+import com.malt.model.dtos.RuleDTO;
 import com.malt.services.RulesService;
 
 /**
@@ -33,7 +33,7 @@ public class InitializeData implements CommandLineRunner {
 	public void run(final String... args) throws Exception {
 
 		final long t1 = System.currentTimeMillis();
-		final List<Rule> rules = rulesService.parseDirectory();
+		final List<RuleDTO> rules = rulesService.parseDirectory();
 		logger.info("Initialisation completed: {} rules have been parsed in {} ms", rules.size(),
 				System.currentTimeMillis() - t1);
 	}

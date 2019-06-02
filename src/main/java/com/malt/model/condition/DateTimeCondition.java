@@ -19,6 +19,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import com.malt.model.condition.enums.DateTimeOperator;
+import com.malt.model.dtos.ConditionValueDTO;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -77,5 +78,15 @@ public final class DateTimeCondition extends ValueCondition {
 	@Override
 	public String toString() {
 		return name + ": " + operators;
+	}
+
+	@Override
+	public ConditionValueDTO toDTO() {
+		final ConditionValueDTO conditionDTO = new ConditionValueDTO();
+		conditionDTO.setName(name.getIdentifier());
+		for (final DateTimeOperator operator : operators.keySet()) {
+			conditionDTO.getParameters().put(operator.getOperator(), operators.get(operator).toString());
+		}
+		return conditionDTO;
 	}
 }

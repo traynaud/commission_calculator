@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.malt.exceptions.InvalidQueryException;
 import com.malt.model.Rule;
 import com.malt.model.condition.Condition;
+import com.malt.model.dtos.RuleDTO;
 import com.malt.repositories.RuleRepository;
 
 /**
@@ -60,7 +61,7 @@ public class RulesService {
 	 * @return {@link Rule}
 	 */
 	@Transactional
-	public Rule parseRuleFromJson(final String jsonStr) {
+	public RuleDTO parseRuleFromJson(final String jsonStr) {
 		final String name;
 		final String restrictions;
 		final double rate;
@@ -95,7 +96,7 @@ public class RulesService {
 		final Optional<Rule> opt_rule = getRuleByName(name);
 		if (opt_rule.isPresent()) {
 			logger.warn("Rule '{}' Already exists!", name);
-			return opt_rule.get();
+			return new RuleDTO(opt_rule.get());
 		}
 		final Condition condition;
 		if (restrictions != null && !restrictions.isEmpty()) {
@@ -112,7 +113,7 @@ public class RulesService {
 		rule.setRate(rate);
 		rule.setCondition(condition);
 		rule = ruleRepository.save(rule);
-		return rule;
+		return new RuleDTO(rule);
 	}
 
 	/**
@@ -160,6 +161,21 @@ public class RulesService {
 	}
 
 	/**
+	 * Get all the rules that are actually stored in the Database as {@link RuleDTO}
+	 *
+	 * @return {@link RuleDTO}
+	 */
+	@Transactional(readOnly = true)
+	public List<RuleDTO> getAllRulesDTO() {
+		final List<Rule> rules = getAllRules();
+		final List<RuleDTO> rulesDTO = new ArrayList<>(rules.size());
+		for (final Rule rule : rules) {
+			rulesDTO.add(new RuleDTO(rule));
+		}
+		return rulesDTO;
+	}
+
+	/**
 	 * Parse all {@link Rule}s present in the Configuration directory
 	 *
 	 * @return {@link Rule}s
@@ -167,7 +183,7 @@ public class RulesService {
 	 * @see #rulesDirectory
 	 */
 	@Transactional
-	public List<Rule> parseDirectory() throws IOException {
+	public List<RuleDTO> parseDirectory() throws IOException {
 		final Path path = Paths.get(rulesDirectory);
 		if (Files.exists(path) && Files.isDirectory(path) && Files.isReadable(path)) {
 			return parseDirectory(path);
@@ -184,11 +200,11 @@ public class RulesService {
 	 * @throws IOException
 	 */
 	@Transactional
-	public List<Rule> parseDirectory(final Path directory) throws IOException {
+	public List<RuleDTO> parseDirectory(final Path directory) throws IOException {
 		final Set<Path> files = Files.list(directory)
 				.filter(file -> file.getFileName().toString().endsWith(RULE_FILE_EXTENSION))
 				.collect(Collectors.toSet());
-		final List<Rule> rules = new ArrayList<>(files.size());
+		final List<RuleDTO> rules = new ArrayList<>(files.size());
 		for (final Path path : files) {
 			try {
 				rules.add(parseFile(path));
@@ -208,7 +224,7 @@ public class RulesService {
 	 * @throws IOException
 	 */
 	@Transactional
-	public Rule parseFile(final Path file) throws IOException {
+	public RuleDTO parseFile(final Path file) throws IOException {
 		final StringBuilder content = new StringBuilder();
 		try (BufferedReader reader = new BufferedReader(
 				new InputStreamReader(new FileInputStream(file.toFile()), "UTF-8"))) {

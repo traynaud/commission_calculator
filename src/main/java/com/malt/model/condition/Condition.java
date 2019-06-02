@@ -10,6 +10,8 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
 
+import com.malt.model.dtos.ConditionDTO;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,4 +38,6 @@ public abstract class Condition {
 	@EqualsAndHashCode.Include
 	@Getter
 	Long id;
+
+	public abstract ConditionDTO toDTO();
 }

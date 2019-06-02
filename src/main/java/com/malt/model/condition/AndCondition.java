@@ -15,6 +15,9 @@ import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.malt.model.condition.enums.Operator;
+import com.malt.model.dtos.ConditionOperatorDTO;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -52,5 +55,17 @@ public final class AndCondition extends Condition {
 		}
 		sb.append("\n]AND-End<<");
 		return sb.toString();
+	}
+
+	@Override
+	public ConditionOperatorDTO toDTO() {
+		final ConditionOperatorDTO conditionDTO = new ConditionOperatorDTO();
+		conditionDTO.setRuleType(Operator.AND.getOperator());
+		if (conditions != null && !conditions.isEmpty()) {
+			for (final Condition contition : conditions) {
+				conditionDTO.getConditions().add(contition.toDTO());
+			}
+		}
+		return conditionDTO;
 	}
 }

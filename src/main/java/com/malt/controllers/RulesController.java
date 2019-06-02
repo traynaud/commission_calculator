@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.malt.model.Rule;
+import com.malt.model.dtos.RuleDTO;
 import com.malt.services.RulesService;
 
 import io.swagger.annotations.Api;
@@ -46,7 +46,7 @@ public class RulesController {
 			@ApiResponse(code = 400, message = "The received request is invalid and can't be processed!"),
 			@ApiResponse(code = 500, message = "An internal server error occured"), })
 	@PostMapping(value = "/add", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public Rule add(@RequestBody final String body) {
+	public RuleDTO add(@RequestBody final String body) {
 		return rulesService.parseRuleFromJson(body);
 	}
 
@@ -55,7 +55,7 @@ public class RulesController {
 			@ApiResponse(code = 400, message = "The received request is invalid and can't be processed!"),
 			@ApiResponse(code = 500, message = "An internal server error occured"), })
 	@GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<Rule> list() {
-		return rulesService.getAllRules();
+	public List<RuleDTO> list() {
+		return rulesService.getAllRulesDTO();
 	}
 }
