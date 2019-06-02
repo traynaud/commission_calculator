@@ -29,7 +29,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Rule {
+public class Rule implements Comparable<Rule> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
@@ -56,5 +56,10 @@ public class Rule {
 				+ "\n>rate=" + rate
 				+ "\n>condition=" + condition;
 		//@formatter:on
+	}
+
+	@Override
+	public int compareTo(final Rule o) {
+		return Double.compare(rate, o.rate);
 	}
 }
