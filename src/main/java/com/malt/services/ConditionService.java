@@ -21,14 +21,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.malt.exceptions.InvalidQueryException;
 import com.malt.model.Delay;
 import com.malt.model.Location;
-import com.malt.model.condition.AndCondition;
 import com.malt.model.condition.Condition;
 import com.malt.model.condition.DateTimeCondition;
 import com.malt.model.condition.DelayCondition;
 import com.malt.model.condition.LocationCondition;
 import com.malt.model.condition.NumericalDoubleCondition;
 import com.malt.model.condition.NumericalIntegerCondition;
-import com.malt.model.condition.OrCondition;
+import com.malt.model.condition.OperatorCondition;
 import com.malt.model.condition.StringCondition;
 import com.malt.model.condition.enums.DateTimeOperator;
 import com.malt.model.condition.enums.LocationOperator;
@@ -39,13 +38,12 @@ import com.malt.model.enums.Continent;
 import com.malt.model.enums.Country;
 import com.malt.model.enums.Parameter;
 import com.malt.model.enums.ParameterType;
-import com.malt.repositories.AndConditionRepository;
 import com.malt.repositories.DateTimeConditionRepository;
 import com.malt.repositories.DelayConditionRepository;
 import com.malt.repositories.LocationConditionRepository;
 import com.malt.repositories.NumericalDoubleConditionRepository;
 import com.malt.repositories.NumericalIntegerConditionRepository;
-import com.malt.repositories.OrConditionRepository;
+import com.malt.repositories.OperatorConditionRepository;
 import com.malt.repositories.StringConditionRepository;
 import com.mysql.cj.xdevapi.JsonArray;
 
@@ -81,10 +79,7 @@ public class ConditionService {
 	private DelayConditionRepository delayConditionRepository;
 
 	@Autowired
-	private OrConditionRepository orConditionRepository;
-
-	@Autowired
-	private AndConditionRepository andConditionRepository;
+	private OperatorConditionRepository operatorConditionRepository;
 
 	@Autowired
 	private LocalisationService localisationService;
@@ -191,21 +186,11 @@ public class ConditionService {
 				}
 			}
 		}
-		switch (operator) {
-		case AND:
-			AndCondition andCondition = new AndCondition();
-			andCondition.setConditions(conditions);
-			andCondition = andConditionRepository.save(andCondition);
-			return andCondition;
-		case OR:
-			OrCondition orCondition = new OrCondition();
-			orCondition.setConditions(conditions);
-			orCondition = orConditionRepository.save(orCondition);
-			return orCondition;
-		default:
-			logger.warn("The operator '@{}' is not implemented yet and will be ignored", operator.getOperator());
-			return null;
-		}
+		OperatorCondition condition = new OperatorCondition();
+		condition.setConditions(conditions);
+		condition.setOperator(operator);
+		condition = operatorConditionRepository.save(condition);
+		return condition;
 	}
 
 	/**

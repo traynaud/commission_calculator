@@ -14,11 +14,10 @@ import com.malt.exceptions.InvalidQueryException;
 import com.malt.model.Delay;
 import com.malt.model.Location;
 import com.malt.model.Rule;
-import com.malt.model.condition.AndCondition;
 import com.malt.model.condition.Condition;
 import com.malt.model.condition.DelayCondition;
 import com.malt.model.condition.LocationCondition;
-import com.malt.model.condition.OrCondition;
+import com.malt.model.condition.OperatorCondition;
 import com.malt.model.condition.ValueCondition;
 import com.malt.model.dtos.CommissionAnswerDTO;
 import com.malt.model.dtos.CommissionRequestDTO;
@@ -85,7 +84,8 @@ public class CommissionService {
 		final List<Rule> rules = ruleService.getAllRules();
 		Rule best = null;
 		for (final Rule rule : rules) {
-			if (checkOneRule(rule, request) && (best == null || rule.compareTo(best) < 0)) {
+			// Check only the Rules that have a better fee to avoid useless processing
+			if ((best == null || rule.compareTo(best) < 0) && checkOneRule(rule, request)) {
 				best = rule;
 			}
 		}
@@ -100,7 +100,7 @@ public class CommissionService {
 	}
 
 	/**
-	 * Determine wether or not a {@link Rule} can be applied based on a list of
+	 * Determine whether or not a {@link Rule} can be applied based on a list of
 	 * parameters
 	 *
 	 * @param rule    a {@link Rule} to check
@@ -121,27 +121,41 @@ public class CommissionService {
 	 *         <code>false</code> otherwise
 	 */
 	private boolean recursiveCheckCondition(final Condition condition, final CommissionRequestDTO request) {
-		if (condition instanceof AndCondition) {
-			final AndCondition andCondition = (AndCondition) condition;
-			for (final Condition sub_condition : andCondition.getConditions()) {
+		if (condition instanceof OperatorCondition) {
+			return checkOperatorCondition((OperatorCondition) condition, request);
+		} else if (condition instanceof ValueCondition) {
+			return checkValueCondition((ValueCondition) condition, request);
+		} else {
+			logger.info("Unsupported Condition type : {}", condition.getClass().getSimpleName());
+			return false;
+		}
+	}
+
+	/**
+	 * Check the condition based on the expected behavior of the Operator
+	 *
+	 * @param condition
+	 * @param request
+	 * @return
+	 */
+	private boolean checkOperatorCondition(final OperatorCondition condition, final CommissionRequestDTO request) {
+		switch (condition.getOperator()) {
+		case AND:
+			for (final Condition sub_condition : condition.getConditions()) {
 				if (!recursiveCheckCondition(sub_condition, request)) {
 					return false;
 				}
 			}
 			return true;
-		} else if (condition instanceof OrCondition) {
-			final OrCondition orCondition = (OrCondition) condition;
-			for (final Condition sub_condition : orCondition.getConditions()) {
+		case OR:
+			for (final Condition sub_condition : condition.getConditions()) {
 				if (recursiveCheckCondition(sub_condition, request)) {
 					return true;
 				}
 			}
 			return false;
-		} else if (condition instanceof ValueCondition) {
-			final boolean value = checkValueCondition((ValueCondition) condition, request);
-			return value;
-		} else {
-			logger.info("Unsupported Contition type : {}", condition.getClass().getSimpleName());
+		default:
+			logger.info("Operator '{}' is not supported Yet!", condition.getOperator());
 			return false;
 		}
 	}

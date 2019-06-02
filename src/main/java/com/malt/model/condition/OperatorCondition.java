@@ -4,8 +4,10 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToMany;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
@@ -22,12 +24,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Describe a list of sub-conditions that validate the condition if at least one
- * is true;
+ * Represents a terminal named condition, associated to a value
  *
  * @author Tanguy
  * @version 1.0
- * @since 30 May 2019
+ * @since 02 June 2019
  *
  */
 @Entity
@@ -36,16 +37,19 @@ import lombok.Setter;
 @PrimaryKeyJoinColumn(name = "id")
 @Getter
 @Setter
-public final class OrCondition extends Condition {
+public class OperatorCondition extends Condition {
 
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@Cascade(org.hibernate.annotations.CascadeType.ALL)
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	Set<Condition> conditions;
+
+	@Enumerated(EnumType.STRING)
+	Operator operator;
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder(">>OR-Start[");
+		final StringBuilder sb = new StringBuilder(">>" + operator.name() + "-Start[");
 		if (conditions != null && !conditions.isEmpty()) {
 			for (final Condition condition : conditions) {
 				sb.append("\n\t").append(condition);
@@ -53,14 +57,14 @@ public final class OrCondition extends Condition {
 		} else {
 			sb.append("\n\t-EMPTY-");
 		}
-		sb.append("\n]OR-End<<");
+		sb.append("\n]" + operator.name() + "-End<<");
 		return sb.toString();
 	}
 
 	@Override
 	public ConditionOperatorDTO toDTO() {
 		final ConditionOperatorDTO conditionDTO = new ConditionOperatorDTO();
-		conditionDTO.setRuleType(Operator.OR.getOperator());
+		conditionDTO.setRuleType(operator.getOperator());
 		if (conditions != null && !conditions.isEmpty()) {
 			for (final Condition contition : conditions) {
 				conditionDTO.getConditions().add(contition.toDTO());
