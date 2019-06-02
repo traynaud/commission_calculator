@@ -1,6 +1,7 @@
 package com.malt.services;
 
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import org.json.JSONException;
@@ -32,7 +33,7 @@ import com.malt.model.json.enums.MissionAttribute;
  * This {@link Service} manage the commissions fees of the freelancers
  *
  * @author Tanguy
- * @version 1.0
+ * @version 1.1
  * @since 29 May 2019
  *
  */
@@ -72,7 +73,7 @@ public class CommissionService {
 	}
 
 	/**
-	 * Check all availabe {@link Rule}s and find the most appropriate one<br/>
+	 * Check all available {@link Rule}s and find the most appropriate one<br/>
 	 * If many {@link Rule}s apply, the most interesting is the one with the lower
 	 * fee<br/>
 	 * If none Apply, the Default fee is returned
@@ -82,15 +83,18 @@ public class CommissionService {
 	 */
 	private CommissionAnswerDTO findBestRule(final CommissionRequestDTO request) {
 		final List<Rule> rules = ruleService.getAllRules();
+		// New Version : Check sorted list to minimize unnecessary computations
+		Collections.sort(rules);
 		Rule best = null;
-		for (final Rule rule : rules) {
-			// Check only the Rules that have a better fee to avoid useless processing
-			if ((best == null || rule.compareTo(best) < 0) && checkOneRule(rule, request)) {
-				best = rule;
+		int i = 0;
+		while (i < rules.size() && best == null) {
+			if (checkOneRule(rules.get(i), request)) {
+				best = rules.get(i);
 			}
+			i++;
 		}
 		if (best == null) {
-			logger.info("Ro Rule matched the specified query!");
+			logger.info("No Rule matched the specified query!");
 			return getDefaultCommission();
 		}
 		final CommissionAnswerDTO answer = new CommissionAnswerDTO();
